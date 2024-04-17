@@ -1,19 +1,31 @@
-[tool.poetry]
+[project]
 name = "raspberrylock"
 version = "2.0.0"
+description = "Door-lock software for the Raspberry Pi using GPIOs"
+authors = [
+    {name = "Uwe Kamper", email="uk@c-base.org"},
+]
+readme = "README.md"
+requires-python = ">= 3.10"
+dependencies = [
+    "gpiozero>=2.0.1",
+    "pytest>=8.1.1",
+]
+
+[tool.poetry]
+name = "raspberrylock"
+version = "0.1.0"
 description = "Door-lock software for the Raspberry Pi using GPIOs"
 authors = ["Uwe Kamper <uk@c-base.org>"]
 
 [tool.poetry.dependencies]
-python = "^3.7"
-lmap = {git = "https://github.com/jaseg/python-lmap.git"}
-gpiozero = "^1.6.2"
-sanic = "^22.9.0"
-docopt = "^0.6.2"
+python = "^3.10"
+gpiozero = "^2.0.1"
+pytest = "^8.1.1"
 
-[tool.poetry.group.rpi.dependencies]
-rpi-gpio = "^0.7.1"
+[project.scripts]
+raspberrylock = "raspberrylock:schloss"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"

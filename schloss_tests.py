@@ -2,13 +2,11 @@
 
 import unittest
 
-from schloss import *
+from raspberrylock import *
 
 
 class SchlossTest(unittest.TestCase):
-    def test_decode_keypad(self):
-        key_1 = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 1]]
-        self.assertEquals(decode_keypad(key_1), '1')
+    
 
     def test_decrease_timeouts(self):
         timeouts_expected = {'1': 0}

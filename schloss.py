@@ -73,6 +73,7 @@ STATE = 0
 UID = ''
 PIN = ''
 RESET_TIMER = STALE_TIMEOUT
+UI_IS_LOCKED = False
 
 app = Sanic(__name__)
 
@@ -104,18 +105,7 @@ def init_gpios():
         keyboard_cols.append(in_pin)
 
 
-def decode_keypad(measurements):
-    """
-    x1 = (0,0,1,0)
-    """
-    layout = [['C', 'D', 'E', 'F'], ['B', '9', '6', '3'],
-              ['0', '8', '5', '2'], ['A', '7', '4', '1']]
-    for y_index, y_row in enumerate(measurements):
-        for x_index, x_state in enumerate(y_row):
-            if x_state > 0:
-                return layout[y_index][x_index]
-    return None   # No key pressed
-
+# decode-keypad was here
 
 def decrease_timeouts(timeouts):
     for k, v in timeouts.items():
@@ -168,10 +158,15 @@ def reset_state():
 async def timeout_reset_state():
     reset_state()   # first at the beginning
     global RESET_TIMER
+    global UI_IS_LOCKED
     loop = asyncio.get_running_loop()
     while loop.is_running:
+        if UI_IS_LOCKED:
+            await asyncio.sleep(1.0)
+            continue
+
         RESET_TIMER -= 1
-        logger.debug("timeout in %d" % RESET_TIMER)
+        # logger.debug("timeout in %d" % RESET_TIMER)
         if RESET_TIMER <= 0:
             reset_state()
             RESET_TIMER = STALE_TIMEOUT
@@ -236,7 +231,9 @@ async def control_loop():
             elif key == 'A':
                 loop = asyncio.get_running_loop()
                 # Start the LDAP check
+                UI_IS_LOCKED = True
                 await open_if_correct(UID, PIN)
+                UI_IS_LOCKED = False
                 reset_state()
                 continue
 
@@ -278,7 +275,6 @@ async def keypad_loop():
         if key:
             await Q.put(key)
         await asyncio.sleep(0.1)
-    
     
 
 @app.get("/")
