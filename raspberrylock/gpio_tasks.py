@@ -100,7 +100,7 @@ def collect_measurements():
     return pin_state
 
 
-async def button_ctl(button, stop_event):
+async def button_ctl(stop_event):
     init_gpios()
     while not stop_event.is_set():
         measured = collect_measurements()

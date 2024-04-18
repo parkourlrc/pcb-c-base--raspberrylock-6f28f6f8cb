@@ -4,19 +4,8 @@ import logging
 import sys
 
 import click
-"""
-raspberrylock
 
-Usage:
-  raspberrylock [--theme <theme>]
-  raspberrylock (-h | --help)
-  raspberrylock --version
-
-Options:
-  -h --help        Show this screen.
-  --version        Show version.
-  --theme=<theme>  Sound theme [default: default].
-"""
+import gpio_tasks
 
 __version__ = '2.0.0'
 
@@ -59,9 +48,7 @@ Q = None
 # Default ROWS, COLS and OPEN_PIN for all others
 # ROWS = [11, 7, 5, 3]
 # COLS = [16, 12, 10, 8]
-ROWS = [17, 4, 3, 2]
-COLS = [23, 18, 15, 14]
-OPEN_PIN = 26
+
 
 
 
@@ -95,9 +82,11 @@ async def main(log_level):
 def cli_main(log_level):
     """Simple CLI program to run the raspberrylock"""
     setup_logging(log_level)
-
+    stop_event = asyncio.Event()
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(main(log_level))
+    loop.create_task(gpio_tasks.button_ctl(stop_event))
+    loop.create_task(main(log_level))
+    loop.run_forever()
 
 
 if __name__ == '__main__':
