@@ -61,7 +61,7 @@ def init_gpios():
         out_pin.off()
         keyboard_rows.append(out_pin)
     for pin in COLS:
-        in_pin = gpiozero.Button(pin, pull_up=False)
+        in_pin = gpiozero.Button(pin, pull_up=False, bounce_time=0.1)
         keyboard_cols.append(in_pin)
 
 
