@@ -6,7 +6,7 @@ authors = [
     {name = "Uwe Kamper", email="uk@c-base.org"},
 ]
 readme = "README.md"
-requires-python = ">= 3.10"
+requires-python = ">= 3.9"
 dependencies = [
     "gpiozero>=2.0.1",
     "pytest>=8.1.1",
@@ -20,7 +20,7 @@ description = "Door-lock software for the Raspberry Pi using GPIOs"
 authors = ["Uwe Kamper <uk@c-base.org>"]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.9"
 gpiozero = "^2.0.1"
 pytest = "^8.1.1"
 click = "^8.1.7"
