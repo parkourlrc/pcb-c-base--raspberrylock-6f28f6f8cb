@@ -102,15 +102,17 @@ def collect_measurements():
 
 async def button_ctl(stop_event):
     init_gpios()
+    last_key_pressed = None
     while not stop_event.is_set():
-        last_key_pressed = None
         measured = collect_measurements()
         is_pressed = decode_keypad(measured)
         if is_pressed:
             if last_key_pressed == is_pressed:
+                # Ignore keys when the user continously presses them
                 pass
             else:
                 log.debug("Pressed: %s" % is_pressed)
+                last_key_pressed = is_pressed
             await asyncio.sleep(0.05)
         else:
             if last_key_pressed:
