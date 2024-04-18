@@ -5,7 +5,7 @@ import sys
 
 import click
 
-import gpio_tasks
+import raspberrylock.gpio_tasks
 
 __version__ = '2.0.0'
 
@@ -84,7 +84,7 @@ def cli_main(log_level):
     setup_logging(log_level)
     stop_event = asyncio.Event()
     loop = asyncio.get_event_loop()
-    loop.create_task(gpio_tasks.button_ctl(stop_event))
+    loop.create_task(raspberrylock.gpio_tasks.button_ctl(stop_event))
     loop.create_task(main(log_level))
     loop.run_forever()
 
