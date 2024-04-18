@@ -107,10 +107,9 @@ async def button_ctl(stop_event):
         is_pressed = decode_keypad(measured)
         if is_pressed:
             log.debug("Pressed: %s" % is_pressed)
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.05)
         else:
-            log.debug("Pressed: %s" % is_pressed)
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.05)
 
 
 
