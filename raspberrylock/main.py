@@ -4,6 +4,7 @@ import logging
 import sys
 
 import click
+import uvicorn
 from starlette.applications import Starlette
 from starlette.responses import PlainTextResponse
 from starlette.routing import Route, Mount, WebSocketRoute
@@ -72,10 +73,10 @@ def cli_main(log_level):
     event_queue = asyncio.queues.Queue()
     stop_event = asyncio.Event()
     loop = asyncio.get_event_loop()
-    loop.create_task(raspberrylock.gpio_tasks.button_ctl(stop_event))
-    loop.create_task(main_loop(log_level))
+    loop.create_task(raspberrylock.gpio_tasks.button_ctl(stop_event, event_queue))
+    loop.create_task(main_loop(log_level, event_queue))
     app = Starlette(debug=True, routes=routes)
-    app.run()
+    uvicorn.run(app, host='0.0.0.0', port=8000)
 
 
 if __name__ == '__main__':

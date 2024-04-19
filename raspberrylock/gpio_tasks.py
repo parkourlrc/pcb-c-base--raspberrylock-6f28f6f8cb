@@ -14,10 +14,6 @@ timeouts = {'1': BOUNCE_TIME, '2': BOUNCE_TIME, '3': BOUNCE_TIME, '4': BOUNCE_TI
             '9': BOUNCE_TIME, '0': BOUNCE_TIME, 'A': BOUNCE_TIME, 'B': BOUNCE_TIME,
             'C': BOUNCE_TIME, 'D': BOUNCE_TIME, 'E': BOUNCE_TIME, 'F': BOUNCE_TIME}
 
-Q = None
-# Q = asyncio.queues.Queue()
-# LOCK = RLock()
-
 # ROWS and COLS for keyboard at HW lager
 # ROWS = [24, 3, 5, 7]
 # COLS = [15, 13, 11, 22]
@@ -34,15 +30,6 @@ door_opener = None   # initialized by init_gpios()
 keyboard_rows = []
 keyboard_cols = []
 
-PLAYER = 'aplay'
-
-MONGO = None
-
-STATE = 0
-UID = ''
-PIN = ''
-RESET_TIMER = STALE_TIMEOUT
-UI_IS_LOCKED = False
 
 ROWS = [17, 4, 3, 2]
 COLS = [23, 18, 15, 14]
