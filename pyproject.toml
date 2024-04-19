@@ -24,6 +24,7 @@ python = "^3.9"
 gpiozero = "^2.0.1"
 pytest = "^8.1.1"
 click = "^8.1.7"
+starlette = "^0.37.2"
 
 [tool.poetry.scripts]
 raspberrylock-cli = "raspberrylock.main:cli_main"

@@ -9,7 +9,6 @@ log = logging.getLogger('asyncio')
 NUMERIC_KEYS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 
 BOUNCE_TIME = 2  # in milliseconds
-STALE_TIMEOUT = 30  # in seconds
 timeouts = {'1': BOUNCE_TIME, '2': BOUNCE_TIME, '3': BOUNCE_TIME, '4': BOUNCE_TIME,
             '5': BOUNCE_TIME, '6': BOUNCE_TIME, '7': BOUNCE_TIME, '8': BOUNCE_TIME,
             '9': BOUNCE_TIME, '0': BOUNCE_TIME, 'A': BOUNCE_TIME, 'B': BOUNCE_TIME,
@@ -100,7 +99,7 @@ def collect_measurements():
     return pin_state
 
 
-async def button_ctl(stop_event):
+async def button_ctl(stop_event, event_queue):
     init_gpios()
     last_key_pressed = None
     while not stop_event.is_set():
@@ -116,7 +115,7 @@ async def button_ctl(stop_event):
             await asyncio.sleep(0.05)
         else:
             if last_key_pressed:
-                log.debug("Releases: %s" % is_pressed)
+                log.debug("Releases: %s" % last_key_pressed)
                 last_key_pressed = None
             await asyncio.sleep(0.05)
 
