@@ -2,6 +2,7 @@
 import asyncio
 import logging
 import sys
+import subprocess
 
 import click
 import uvicorn
@@ -11,6 +12,7 @@ from starlette.routing import Route, Mount, WebSocketRoute
 from starlette.staticfiles import StaticFiles
 
 import raspberrylock.gpio_tasks
+from raspberrylock.ldap_interface import authenticate
 
 __version__ = '2.0.0'
 
@@ -96,6 +98,34 @@ async def timeout_reset_state():
         await asyncio.sleep(1.0)
 
 
+async def open_if_correct(uid, pin):
+    """
+    BLOCKING! Maybe this function needs to run in an executor thread.
+    """
+    print('checking ldap ...')
+    try:
+        if authenticate(uid, pin):
+            log.info("Auth works")
+            #subprocess.Popen([PLAYER, './themes/%s/success.wav' % THEME],
+            #                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            #next_theme()
+            door_opener.on()
+            await asyncio.sleep(1)
+            door_opener.off()
+            await asyncio.sleep(8)
+
+        else:
+            log.info("Auth NO works")
+            #subprocess.Popen([PLAYER, './themes/%s/fail.wav' % THEME],
+            #                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            await asyncio.sleep(2)
+    except Exception as error:
+        log.error(error)
+        # subprocess.Popen([PLAYER, './themes/%s/error.wav' % THEME],
+        #                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        await asyncio.sleep(2)
+
+
 async def control_loop(event_queue):
     global RESET_TIMER
     global STATE, UID, PIN
@@ -150,11 +180,13 @@ async def control_loop(event_queue):
                 loop = asyncio.get_running_loop()
                 # Start the LDAP check
                 UI_IS_LOCKED = True
-                log.warning("OPEN IF CORRECT")
-                #await open_if_correct(UID, PIN)
+                # log.warning("OPEN IF CORRECT")
+                await open_if_correct(UID, PIN)
                 UI_IS_LOCKED = False
                 reset_state()
                 continue
+
+
 
 
 @app.on_event('startup')
