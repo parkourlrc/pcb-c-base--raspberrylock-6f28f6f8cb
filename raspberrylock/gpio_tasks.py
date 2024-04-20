@@ -3,7 +3,8 @@ import logging
 
 import gpiozero
 
-log = logging.getLogger('asyncio')
+#log = logging.getLogger('asyncio')
+log = logging.getLogger(__name__)
 # GPIO.setwarnings(False)
 
 NUMERIC_KEYS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
@@ -99,6 +100,7 @@ async def button_ctl(stop_event, event_queue):
             else:
                 log.debug("Pressed: %s" % is_pressed)
                 last_key_pressed = is_pressed
+                await event_queue.put(is_pressed)
             await asyncio.sleep(0.05)
         else:
             if last_key_pressed:

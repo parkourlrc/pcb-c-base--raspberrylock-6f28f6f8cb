@@ -26,6 +26,7 @@ pytest = "^8.1.1"
 click = "^8.1.7"
 starlette = "^0.37.2"
 uvicorn = "^0.29.0"
+pigpio = "^1.78"
 
 [tool.poetry.scripts]
 raspberrylock-cli = "raspberrylock.main:cli_main"
