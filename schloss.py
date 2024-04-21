@@ -1,18 +1,4 @@
-#!/usr/bin/env python3
 
-"""
-c-lab schloss
-
-Usage:
-  schloss.py [--theme <theme>]
-  schloss.py (-h | --help)
-  schloss.py --version
-
-Options:
-  -h --help        Show this screen.
-  --version        Show version.
-  --theme=<theme>  Sound theme [default: default].
-"""
 
 import asyncio
 import sys
@@ -34,46 +20,6 @@ from sanic.response import text
 __version__ = '2.0.0'
 
 
-# GPIO.setwarnings(False)
-
-NUMERIC_KEYS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
-
-BOUNCE_TIME = 2  # in milliseconds
-STALE_TIMEOUT = 30  # in seconds
-timeouts = {'1': BOUNCE_TIME, '2': BOUNCE_TIME, '3': BOUNCE_TIME, '4': BOUNCE_TIME,
-            '5': BOUNCE_TIME, '6': BOUNCE_TIME, '7': BOUNCE_TIME, '8': BOUNCE_TIME,
-            '9': BOUNCE_TIME, '0': BOUNCE_TIME, 'A': BOUNCE_TIME, 'B': BOUNCE_TIME,
-            'C': BOUNCE_TIME, 'D': BOUNCE_TIME, 'E': BOUNCE_TIME, 'F': BOUNCE_TIME}
-
-Q = None
-# Q = asyncio.queues.Queue()
-# LOCK = RLock()
-
-# ROWS and COLS for keyboard at HW lager
-# ROWS = [24, 3, 5, 7]
-# COLS = [15, 13, 11, 22]
-# OPEN_PIN = 26
-
-# Default ROWS, COLS and OPEN_PIN for all others
-# ROWS = [11, 7, 5, 3]
-# COLS = [16, 12, 10, 8]
-ROWS = [17, 4, 3, 2]
-COLS = [23, 18, 15, 14]
-OPEN_PIN = 26
-
-door_opener = None   # initialized by init_gpios()
-keyboard_rows = []
-keyboard_cols = []
-
-PLAYER = 'aplay'
-
-MONGO = None
-
-STATE = 0
-UID = ''
-PIN = ''
-RESET_TIMER = STALE_TIMEOUT
-UI_IS_LOCKED = False
 
 app = Sanic(__name__)
 
@@ -87,22 +33,6 @@ def next_theme():
     OLD_THEME = THEME
     while THEME != OLD_THEME:
         THEME = random.choice(themes)
-
-
-def init_gpios():
-    # GPIO.setmode(GPIO.BOARD)
-    # GPIO.setup(OPEN_PIN, GPIO.OUT)
-    global door_opener
-    door_opener = gpiozero.LED(OPEN_PIN)
-    door_opener.off()
-
-    for pin in ROWS:
-        out_pin = gpiozero.LED(pin)
-        out_pin.off()
-        keyboard_rows.append(out_pin)
-    for pin in COLS:
-        in_pin = gpiozero.Button(pin, pull_up=False)
-        keyboard_cols.append(in_pin)
 
 
 # decode-keypad was here
@@ -146,122 +76,13 @@ def read_keypad():
         return None
 
 
-def reset_state():
-    global STATE, UID, PIN
-    logger.debug("reset state")
-    STATE = 0
-    UID = ''
-    PIN = ''
 
 
-@app.add_task
-async def timeout_reset_state():
-    reset_state()   # first at the beginning
-    global RESET_TIMER
-    global UI_IS_LOCKED
-    loop = asyncio.get_running_loop()
-    while loop.is_running:
-        if UI_IS_LOCKED:
-            await asyncio.sleep(1.0)
-            continue
-
-        RESET_TIMER -= 1
-        # logger.debug("timeout in %d" % RESET_TIMER)
-        if RESET_TIMER <= 0:
-            reset_state()
-            RESET_TIMER = STALE_TIMEOUT
-        await asyncio.sleep(1.0)
 
 
-@app.add_task
-async def control_loop():
-    global Q
-    if not Q:
-        Q = asyncio.queues.Queue()
-
-    global RESET_TIMER
-    global STATE, UID, PIN
-    reset_state()
-
-    # Main state machine.
-    # Expects the user to enter her UID, then PIN like this:
-    # [A] 2903 [A] 123456 A
-    # The first and second 'A' presses are optional and ignored for compatibility with the replicator.
-    # The second 'A' would be mandatory for a non-4-digit UID, luckily all c-base UIDs are 4-digit, though.
-    loop = asyncio.get_running_loop()
-    while loop.is_running:
-        key = await Q.get()
-        print('state={}, got symbol {}'.format(STATE, '#'))
-        RESET_TIMER = STALE_TIMEOUT
-        Q.task_done()
-        if STATE == 0:
-            if key == 'A':
-                # print('Enter UID:')
-                STATE = 0
-                continue
-            elif key == 'C':
-                reset_state()
-                continue
-            elif key in NUMERIC_KEYS:
-                UID += key
-                STATE = 1
-                continue
-        elif STATE == 1:
-            if key in NUMERIC_KEYS:
-                if len(UID) < 4:
-                    UID += key
-                    STATE = 1
-                else:
-                    PIN += key
-                    STATE = 2
-                continue
-            elif key == 'C':
-                reset_state()
-                continue
-            elif key == 'A':
-                STATE = 2
-                continue
-        elif STATE == 2:
-            if key in NUMERIC_KEYS:
-                PIN += key
-                continue
-            elif key == 'C':
-                reset_state()
-                continue
-            elif key == 'A':
-                loop = asyncio.get_running_loop()
-                # Start the LDAP check
-                UI_IS_LOCKED = True
-                await open_if_correct(UID, PIN)
-                UI_IS_LOCKED = False
-                reset_state()
-                continue
 
 
-async def open_if_correct(uid, pin):
-    """
-    BLOCKING! Maybe this function needs to run in an executor thread.
-    """
-    print('checking ldap ...')
-    try:
-        if authenticate(uid, pin):
-            subprocess.Popen([PLAYER, './themes/%s/success.wav' % THEME],
-                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            next_theme()
-            door_opener.on()
-            await asyncio.sleep(1)
-            door_opener.off()
-            await asyncio.sleep(8)
 
-        else:
-            subprocess.Popen([PLAYER, './themes/%s/fail.wav' % THEME],
-                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            await asyncio.sleep(2)
-    except Exception as error:
-        print(error)
-        subprocess.Popen([PLAYER, './themes/%s/error.wav' % THEME],
-                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        await asyncio.sleep(2)
 
 
 @app.add_task

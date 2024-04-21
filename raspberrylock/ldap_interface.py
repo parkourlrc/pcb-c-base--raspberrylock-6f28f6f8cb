@@ -10,35 +10,9 @@ log = logging.getLogger(__name__)
 from ldap3 import Server, Connection, ALL
 
 
-class LDAP:
-    URI = 'ldaps://lea.cbrp3.c-base.org'
-    # URI = 'ldaps://dea.cbrp3.c-base.org'
-    BASE = 'dc=c-base,dc=org'
-    USERBASE = 'ou=crew'
-    BINDDN = 'cn=c-labpin,ou=bind,dc=c-base,dc=org'
-    BINDPW = '**********************'
-    PINFIELD = 'c-labPIN'
-    UIDFIELD = 'uid'
-
-    ##ALLOWED: CREW (ALL)
-    ACCESS_FILTER = '(&(uidNumber={})(memberof=cn=crew,ou=groups,dc=c-base,dc=org)(memberof=cn=crew,ou=groups,dc=c-base,dc=org))'
-
-    ##ALLOWED: CEY-C-LAB
-    # ACCESS_FILTER = '(&(uidNumber={})(memberof=cn=cey-c-lab,ou=groups,dc=c-base,dc=org)(memberof=cn=crew,ou=groups,dc=c-base,dc=org))'
-
-    ##ALLOWED: CEY-SCHLEUSE
-    # ACCESS_FILTER = '(&(uidNumber={})(memberof=cn=cey-schleuse,ou=groups,dc=c-base,dc=org)(memberof=cn=crew,ou=groups,dc=c-base,dc=org))'
-
-    ##ALLOWED: CEY-SCHLEUSE, CEY-C-LAB
-    # ACCESS_FILTER = '(&(uidNumber={})(|(memberof=cn=cey-c-lab,ou=groups,dc=c-base,dc=org)(memberof=cn=cey-schleuse,ou=groups,dc=c-base,dc=org))(memberof=cn=crew,ou=groups,dc=c-base,dc=org))'
-
-    ##ALLOWED: CEY-SCHLEUSE, CEY-C-LAB, CEY-SOUNDLAB
-    # ACCESS_FILTER = '(&(uidNumber={})(|(memberof=cn=cey-c-lab,ou=groups,dc=c-base,dc=org)(memberof=cn=cey-soundlab,ou=groups,dc=c-base,dc=org)(memberof=cn=cey-schleuse,ou=groups,dc=c-base,dc=org))(memberof=cn=crew,ou=groups,dc=c-base,dc=org))'
-
-
-def ldap_connect():
+def ldap_connect(LDAP):
     server = Server('lea.cbrp3.c-base.org', use_ssl=True)
-    conn = Connection(server, user=LDAP.BINDDN, password=LDAP.BINDPW)
+    conn = Connection(server, user=LDAP['BINDDN'], password=LDAP['BINDPW'])
     conn.open()
     if not conn.bind():
         log.error('error in bind: %s' % conn.result)
@@ -58,20 +32,20 @@ def pwcheck(record, pw):
     return hashv == newhashv
 
 
-def authenticate(uid, pin):
-    conn, server = ldap_connect()
+def authenticate(LDAP, uid, pin):
+    conn, server = ldap_connect(LDAP)
     try:
         is_found = conn.search(
-            ','.join([LDAP.USERBASE, LDAP.BASE]),
+            ','.join([LDAP['USERBASE'], LDAP['BASE']]),
             LDAP.ACCESS_FILTER.format(uid),
-            attributes=[LDAP.UIDFIELD, LDAP.PINFIELD, 'uid']
+            attributes=[LDAP['UIDFIELD'], LDAP['PINFIELD'], 'uid']
         )
         if not is_found:
             log.error("conn.search did not find anything")
             return False
         user = conn.entries[0]
-        username = str(user[LDAP.UIDFIELD])
-        hashed = str(user[LDAP.PINFIELD])
+        username = str(user[LDAP['UIDFIELD']])
+        hashed = str(user[LDAP['PINFIELD']])
         if pwcheck(hashed, pin):
             log.warning('Valid combination for user "%s". Opening lock' % username)
             conn.unbind()
@@ -84,5 +58,3 @@ def authenticate(uid, pin):
 
 
 numbuf = []
-
-

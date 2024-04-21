@@ -2,7 +2,8 @@
 import asyncio
 import logging
 import sys
-import subprocess
+import configparser
+from pathlib import Path
 
 import click
 import uvicorn
@@ -51,7 +52,7 @@ STALE_TIMEOUT = 30   # seconds
 RESET_TIMER = STALE_TIMEOUT
 UI_IS_LOCKED = False
 
-
+config = None   # Will be set during app startup
 log_level = logging.DEBUG
 
 def homepage(request):
@@ -62,10 +63,6 @@ routes = [
 ]
 
 app = Starlette(debug=True, routes=routes)
-
-async def main_loop(log_level, event_queue):
-    while True:
-        await asyncio.wait_for(event_queue.get(), timeout=1.0)
 
 
 def reset_state():
@@ -98,13 +95,13 @@ async def timeout_reset_state():
         await asyncio.sleep(1.0)
 
 
-async def open_if_correct(uid, pin):
+async def open_if_correct(LDAP, uid, pin):
     """
     BLOCKING! Maybe this function needs to run in an executor thread.
     """
     print('checking ldap ...')
     try:
-        if authenticate(uid, pin):
+        if authenticate(LDAP, uid, pin):
             log.info("Auth works")
             #subprocess.Popen([PLAYER, './themes/%s/success.wav' % THEME],
             #                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -126,10 +123,12 @@ async def open_if_correct(uid, pin):
         await asyncio.sleep(2)
 
 
-async def control_loop(event_queue):
+async def control_loop(global_config, event_queue):
     global RESET_TIMER
     global STATE, UID, PIN
     reset_state()
+
+    LDAP = global_config['LDAP']
 
     # Main state machine.
     # Expects the user to enter her UID, then PIN like this:
@@ -181,27 +180,36 @@ async def control_loop(event_queue):
                 # Start the LDAP check
                 UI_IS_LOCKED = True
                 # log.warning("OPEN IF CORRECT")
-                await open_if_correct(UID, PIN)
+                await open_if_correct(LDAP, UID, PIN)
                 UI_IS_LOCKED = False
                 reset_state()
                 continue
 
 
-
-
 @app.on_event('startup')
 async def app_startup():
     global log_level
+    global config
     setup_logging(log_level)
     event_queue = asyncio.queues.Queue()
     stop_event = asyncio.Event()
     asyncio.create_task(raspberrylock.gpio_tasks.button_ctl(stop_event, event_queue))
-    asyncio.create_task(main_loop(log_level, event_queue))
     asyncio.create_task(timeout_reset_state())
-    asyncio.create_task(control_loop(event_queue))
+    asyncio.create_task(control_loop(config, event_queue))
     if log_level == 'DEBUG':
         log.debug('DEBUG logging enabled by user.')
     await asyncio.sleep(1.0)
+
+
+def load_config_file(config_file_name: str):
+    if Path(config_file_name).is_file():
+        my_config = {}
+        log.info("Loading config from file: `%s`" % config_file_name)
+        loaded = configparser.ConfigParser()
+        loaded.read(config_file_name)
+        for section in loaded.sections():
+            config[section] = loaded[section]
+        return my_config
 
 
 @click.command()
@@ -210,8 +218,11 @@ async def app_startup():
 @click.option("--log-level", 'log_level', 
               default="INFO",
               help="Loging level (DEBUG, INFO, WARNING, ERROR)")
-def cli_main(log_level):
+@click.option("-c", "config_file", default="./config.ini", help="Config file name [default: ./config.ini]")
+def cli_main(log_level, config_file):
     """Simple CLI program to run the raspberrylock"""
+    global config
+    config = load_config_file(config_file)
     uvicorn.run(app, host='0.0.0.0', port=8000)
 
 
