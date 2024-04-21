@@ -208,7 +208,7 @@ def load_config_file(config_file_name: str):
         loaded = configparser.ConfigParser()
         loaded.read(config_file_name)
         for section in loaded.sections():
-            config[section] = loaded[section]
+            my_config[section] = loaded[section]
         return my_config
 
 
