@@ -1,3 +1,6 @@
+[DATABASE]
+DATABASE_FILENAME = './temp_key_db.json'
+
 [LDAP]
 URI = 'ldaps://lea.cbrp3.c-base.org'
 ; URI = 'ldaps://dea.cbrp3.c-base.org'
