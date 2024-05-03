@@ -310,6 +310,20 @@ files = [
 ]
 
 [[package]]
+name = "tinydb-serialization"
+version = "2.1.1"
+description = "Serialization for objects that TinyDB otherwise couldn't handle"
+optional = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "tinydb_serialization-2.1.1-py3-none-any.whl", hash = "sha256:95e04564590798a0fdca63fe57f9a4013183448b4aadcba151b6234d1c9b6f28"},
+    {file = "tinydb_serialization-2.1.1.tar.gz", hash = "sha256:3f7a23bd60ef88d4d0ae930c1902bd72d5a970c87c721099b2d726731c8616c1"},
+]
+
+[package.dependencies]
+tinydb = ">=4.0,<5.0"
+
+[[package]]
 name = "tomli"
 version = "2.0.1"
 description = "A lil' TOML parser"
@@ -368,4 +382,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "fc21882da730724e22262de72ff32afb3083c2ae10e4d9989dcfeef9c1a8591f"
+content-hash = "94bef660ca8eefd88a8de3042e4878f88d041b2cfe43b1ca8d91097c852bb056"

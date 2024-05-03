@@ -29,6 +29,7 @@ uvicorn = "^0.29.0"
 pigpio = "^1.78"
 ldap3 = "^2.9.1"
 tinydb = "^4.8.0"
+tinydb-serialization = "^2.1.1"
 
 [tool.poetry.scripts]
 raspberrylock-cli = "raspberrylock.main:cli_main"
