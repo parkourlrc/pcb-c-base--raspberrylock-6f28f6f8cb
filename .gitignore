@@ -40,3 +40,4 @@ nosetests.xml
 .DS_Store
 *.BACKUP
 config.ini
+temp_key_db.json

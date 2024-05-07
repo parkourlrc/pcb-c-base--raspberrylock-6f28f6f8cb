@@ -34,7 +34,7 @@ def look_for_temp_key(database_filename: Path, username: str, valid_at: datetime
     Returns `True` if there exists a valid temp key for the user.
     """
     if valid_at is None:
-        valid_at = datetime.datetime.now(tz=datetime.utc)
+        valid_at = datetime.datetime.now(tz=datetime.UTC)
     
     db = TinyDB(database_filename, storage=serialization)
     TempKey = Query()
@@ -55,7 +55,7 @@ def cleanup_database(database_filename: Path, valid_at: datetime=None) -> None:
     Remove any expired tempkeys
     """
     if valid_at is None:
-        valid_at = datetime.datetime.now(tz=datetime.utc)
+        valid_at = datetime.datetime.now(tz=datetime.UTC)
 
     db = TinyDB(database_filename, storage=serialization)
     TempKey = Query()

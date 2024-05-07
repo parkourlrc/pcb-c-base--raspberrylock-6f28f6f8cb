@@ -32,12 +32,17 @@ def pwcheck(record, pw):
     return hashv == newhashv
 
 
-def authenticate(LDAP, uid, pin):
+def authenticate(LDAP, uid, pin, is_fallback=False):
+    if is_fallback is True:
+        filter = LDAP['ACCESS_FILTER_FALLBACK'].format(uid)
+    else:
+        filter = LDAP['ACCESS_FILTER'].format(uid)
+    log.info("Using filter %s" % repr(filter))
     conn, server = ldap_connect(LDAP)
     try:
         is_found = conn.search(
             ','.join([LDAP['USERBASE'], LDAP['BASE']]),
-            LDAP.ACCESS_FILTER.format(uid),
+            filter,
             attributes=[LDAP['UIDFIELD'], LDAP['PINFIELD'], 'uid']
         )
         if not is_found:
@@ -55,6 +60,35 @@ def authenticate(LDAP, uid, pin):
     if not conn.closed:
         conn.unbind()
     return False
+
+
+def find_user_fallback(LDAP, uid):
+    """
+    Return the username of valid fallback user (used to find the temporary key)
+
+    Returns `False` if the user cannot be found.
+    """
+    conn, server = ldap_connect(LDAP)
+    try:
+        is_found = conn.search(
+            ','.join([LDAP['USERBASE'], LDAP['BASE']]),
+            LDAP['ACCESS_FILTER_FALLBACK'].format(uid),
+            attributes=[LDAP['UIDFIELD'], LDAP['PINFIELD'], 'uid']
+        )
+        if not is_found:
+            log.error("conn.search did not find anything")
+            return False
+        else:
+            user = conn.entries[0]
+            username = str(user[LDAP['UIDFIELD']])
+            return username
+    
+    except Exception as e:
+        log.error('Invalid user/pin: %s (%s)' % (uid, str(e)))
+    if not conn.closed:
+        conn.unbind()
+    return False
+
 
 
 numbuf = []

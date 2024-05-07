@@ -98,13 +98,13 @@ async def button_ctl(stop_event, event_queue):
                 # Ignore keys when the user continously presses them
                 pass
             else:
-                log.debug("Pressed: %s" % is_pressed)
+                log.debug("Pressed: #")   # %s" % is_pressed)
                 last_key_pressed = is_pressed
                 await event_queue.put(is_pressed)
             await asyncio.sleep(0.05)
         else:
             if last_key_pressed:
-                log.debug("Releases: %s" % last_key_pressed)
+                log.debug("Releases: #")   # % last_key_pressed)
                 last_key_pressed = None
             await asyncio.sleep(0.05)
 

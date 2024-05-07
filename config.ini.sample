@@ -1,29 +1,32 @@
+;; Do not use quotation characters (like ' or ") for strings in this file.
+
 [DATABASE]
-DATABASE_FILENAME = './temp_key_db.json'
+DATABASE_FILENAME = ./temp_key_db.json
 
 [LDAP]
-URI = 'ldaps://lea.cbrp3.c-base.org'
-; URI = 'ldaps://dea.cbrp3.c-base.org'
-BASE = 'dc=c-base,dc=org'
-USERBASE = 'ou=crew'
-BINDDN = 'cn=c-labpin,ou=bind,dc=c-base,dc=org'
-BINDPW = '**********************'
-PINFIELD = 'c-labPIN'
-UIDFIELD = 'uid'
+URI = ldaps://lea.cbrp3.c-base.org
+; URI = ldaps://dea.cbrp3.c-base.org
+BASE = dc=c-base,dc=org
+USERBASE = ou=crew
+BINDDN = cn=c-labpin,ou=bind,dc=c-base,dc=org
+BINDPW = **********************
+PINFIELD = c-labPIN
+UIDFIELD = uid
 
-ACCESS_FILTER = '(&(uidNumber={})(memberof=cn=crew,ou=groups,dc=c-base,dc=org))'
+;; LDAP ACCESS FILTER for finding users, when initial LDAP did not work
+ACCESS_FILTER_FALLBACK = (&(uidNumber={})(memberof=cn=crew,ou=groups,dc=c-base,dc=org))
 
 ;; ALLOWED: CREW (ALL)
-ACCESS_FILTER = '(&(uidNumber={})(memberof=cn=crew,ou=groups,dc=c-base,dc=org)(memberof=cn=crew,ou=groups,dc=c-base,dc=org))'
+ACCESS_FILTER = (&(uidNumber={})(memberof=cn=crew,ou=groups,dc=c-base,dc=org)(memberof=cn=crew,ou=groups,dc=c-base,dc=org))
 
 ;: #ALLOWED: CEY-C-LAB
-; ACCESS_FILTER = '(&(uidNumber={})(memberof=cn=cey-c-lab,ou=groups,dc=c-base,dc=org)(memberof=cn=crew,ou=groups,dc=c-base,dc=org))'
+; ACCESS_FILTER = (&(uidNumber={})(memberof=cn=cey-c-lab,ou=groups,dc=c-base,dc=org)(memberof=cn=crew,ou=groups,dc=c-base,dc=org))
 
 ;; ALLOWED: CEY-SCHLEUSE
-; ACCESS_FILTER = '(&(uidNumber={})(memberof=cn=cey-schleuse,ou=groups,dc=c-base,dc=org)(memberof=cn=crew,ou=groups,dc=c-base,dc=org))'
+; ACCESS_FILTER = (&(uidNumber={})(memberof=cn=cey-schleuse,ou=groups,dc=c-base,dc=org)(memberof=cn=crew,ou=groups,dc=c-base,dc=org))
 
 ;; ALLOWED: CEY-SCHLEUSE, CEY-C-LAB
-; ACCESS_FILTER = '(&(uidNumber={})(|(memberof=cn=cey-c-lab,ou=groups,dc=c-base,dc=org)(memberof=cn=cey-schleuse,ou=groups,dc=c-base,dc=org))(memberof=cn=crew,ou=groups,dc=c-base,dc=org))'
+; ACCESS_FILTER = (&(uidNumber={})(|(memberof=cn=cey-c-lab,ou=groups,dc=c-base,dc=org)(memberof=cn=cey-schleuse,ou=groups,dc=c-base,dc=org))(memberof=cn=crew,ou=groups,dc=c-base,dc=org))
 
 ;; ALLOWED: CEY-SCHLEUSE, CEY-C-LAB, CEY-SOUNDLAB
-; ACCESS_FILTER = '(&(uidNumber={})(|(memberof=cn=cey-c-lab,ou=groups,dc=c-base,dc=org)(memberof=cn=cey-soundlab,ou=groups,dc=c-base,dc=org)(memberof=cn=cey-schleuse,ou=groups,dc=c-base,dc=org))(memberof=cn=crew,ou=groups,dc=c-base,dc=org))'
+; ACCESS_FILTER = (&(uidNumber={})(|(memberof=cn=cey-c-lab,ou=groups,dc=c-base,dc=org)(memberof=cn=cey-soundlab,ou=groups,dc=c-base,dc=org)(memberof=cn=cey-schleuse,ou=groups,dc=c-base,dc=org))(memberof=cn=crew,ou=groups,dc=c-base,dc=org))
